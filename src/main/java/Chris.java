@@ -20,20 +20,21 @@ public class Chris {
         while (scanner.hasNextLine()) {
             String input = scanner.nextLine();
             try {
-                if (input.equals("bye")) {
+                CommandType commandType = CommandType.from(input);
+                if (commandType == CommandType.BYE) {
                     showFarewell();
                     break;
-                } else if (input.equals("list")) {
+                } else if (commandType == CommandType.LIST) {
                     showTasks(tasks);
-                } else if (input.equals("mark") || input.startsWith("mark ")) {
+                } else if (commandType == CommandType.MARK) {
                     int taskIndex = getTaskIndex(input, "mark", tasks.size());
                     tasks.get(taskIndex).markAsDone();
                     showTaskMarked(tasks.get(taskIndex));
-                } else if (input.equals("unmark") || input.startsWith("unmark ")) {
+                } else if (commandType == CommandType.UNMARK) {
                     int taskIndex = getTaskIndex(input, "unmark", tasks.size());
                     tasks.get(taskIndex).markAsNotDone();
                     showTaskUnmarked(tasks.get(taskIndex));
-                } else if (input.equals("todo") || input.startsWith("todo ")) {
+                } else if (commandType == CommandType.TODO) {
                     String description = input.substring(4).trim();
                     if (description.isEmpty()) {
                         throw new ChrisException("A todo needs a description, e.g., todo read book.");
@@ -41,7 +42,7 @@ public class Chris {
                     Task todo = new Todo(description);
                     tasks.add(todo);
                     showTaskAdded(todo, tasks.size());
-                } else if (input.equals("deadline") || input.startsWith("deadline ")) {
+                } else if (commandType == CommandType.DEADLINE) {
                     int byIndex = input.indexOf(" /by ");
                     if (byIndex < 0) {
                         throw new ChrisException("A deadline needs '/by', e.g., deadline return book /by Sunday.");
@@ -54,7 +55,7 @@ public class Chris {
                     Task deadline = new Deadline(description, by);
                     tasks.add(deadline);
                     showTaskAdded(deadline, tasks.size());
-                } else if (input.equals("event") || input.startsWith("event ")) {
+                } else if (commandType == CommandType.EVENT) {
                     int fromIndex = input.indexOf(" /from ");
                     int toIndex = input.indexOf(" /to ");
                     if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
@@ -69,7 +70,7 @@ public class Chris {
                     Task event = new Event(description, from, to);
                     tasks.add(event);
                     showTaskAdded(event, tasks.size());
-                } else if (input.equals("delete") || input.startsWith("delete ")) {
+                } else if (commandType == CommandType.DELETE) {
                     int taskIndex = getTaskIndex(input, "delete", tasks.size());
                     Task deletedTask = tasks.remove(taskIndex);
                     showTaskDeleted(deletedTask, tasks.size());
