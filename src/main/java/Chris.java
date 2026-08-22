@@ -50,6 +50,8 @@ public class Chris {
                 System.out.println(" OK, I've marked this task as not done yet:");
                 System.out.println("   " + tasks[taskIndex]);
                 System.out.println(SEPARATOR);
+            } else if (input.equals("todo")) {
+                showError("A todo needs a description, e.g., todo read book.");
             } else if (input.startsWith("todo ")) {
                 tasks[taskCount] = new Todo(input.substring(5));
                 taskCount++;
@@ -82,7 +84,20 @@ public class Chris {
                 System.out.println("   " + tasks[taskCount - 1]);
                 System.out.println(" Now you have " + taskCount + " tasks in the list.");
                 System.out.println(SEPARATOR);
+            } else {
+                showError("I don't recognise that command. Try todo, deadline, event, list, mark, unmark, or bye.");
             }
         }
+    }
+
+    /**
+     * Displays a user-friendly input error.
+     *
+     * @param message explanation of the error
+     */
+    private static void showError(String message) {
+        System.out.println(SEPARATOR);
+        System.out.println(" OOPS!!! " + message);
+        System.out.println(SEPARATOR);
     }
 }
