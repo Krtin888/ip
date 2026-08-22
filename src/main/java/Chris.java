@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -5,7 +6,6 @@ import java.util.Scanner;
  */
 public class Chris {
     private static final String SEPARATOR = "____________________________________________________________";
-    private static final int MAX_TASKS = 100;
 
     /**
      * Starts the chatbot, processes commands, and exits on {@code bye}.
@@ -14,8 +14,7 @@ public class Chris {
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Task[] tasks = new Task[MAX_TASKS];
-        int taskCount = 0;
+        ArrayList<Task> tasks = new ArrayList<>();
 
         showGreeting();
         while (scanner.hasNextLine()) {
@@ -25,26 +24,24 @@ public class Chris {
                     showFarewell();
                     break;
                 } else if (input.equals("list")) {
-                    showTasks(tasks, taskCount);
+                    showTasks(tasks);
                 } else if (input.equals("mark") || input.startsWith("mark ")) {
-                    int taskIndex = getTaskIndex(input, "mark", taskCount);
-                    tasks[taskIndex].markAsDone();
-                    showTaskMarked(tasks[taskIndex]);
+                    int taskIndex = getTaskIndex(input, "mark", tasks.size());
+                    tasks.get(taskIndex).markAsDone();
+                    showTaskMarked(tasks.get(taskIndex));
                 } else if (input.equals("unmark") || input.startsWith("unmark ")) {
-                    int taskIndex = getTaskIndex(input, "unmark", taskCount);
-                    tasks[taskIndex].markAsNotDone();
-                    showTaskUnmarked(tasks[taskIndex]);
+                    int taskIndex = getTaskIndex(input, "unmark", tasks.size());
+                    tasks.get(taskIndex).markAsNotDone();
+                    showTaskUnmarked(tasks.get(taskIndex));
                 } else if (input.equals("todo") || input.startsWith("todo ")) {
-                    ensureSpaceForTask(taskCount);
                     String description = input.substring(4).trim();
                     if (description.isEmpty()) {
                         throw new ChrisException("A todo needs a description, e.g., todo read book.");
                     }
-                    tasks[taskCount] = new Todo(description);
-                    taskCount++;
-                    showTaskAdded(tasks[taskCount - 1], taskCount);
+                    Task todo = new Todo(description);
+                    tasks.add(todo);
+                    showTaskAdded(todo, tasks.size());
                 } else if (input.equals("deadline") || input.startsWith("deadline ")) {
-                    ensureSpaceForTask(taskCount);
                     int byIndex = input.indexOf(" /by ");
                     if (byIndex < 0) {
                         throw new ChrisException("A deadline needs '/by', e.g., deadline return book /by Sunday.");
@@ -54,11 +51,10 @@ public class Chris {
                     if (description.isEmpty() || by.isEmpty()) {
                         throw new ChrisException("A deadline needs both a description and a time after '/by'.");
                     }
-                    tasks[taskCount] = new Deadline(description, by);
-                    taskCount++;
-                    showTaskAdded(tasks[taskCount - 1], taskCount);
+                    Task deadline = new Deadline(description, by);
+                    tasks.add(deadline);
+                    showTaskAdded(deadline, tasks.size());
                 } else if (input.equals("event") || input.startsWith("event ")) {
-                    ensureSpaceForTask(taskCount);
                     int fromIndex = input.indexOf(" /from ");
                     int toIndex = input.indexOf(" /to ");
                     if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
@@ -70,18 +66,13 @@ public class Chris {
                     if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
                         throw new ChrisException("An event needs a description, start time, and end time.");
                     }
-                    tasks[taskCount] = new Event(description, from, to);
-                    taskCount++;
-                    showTaskAdded(tasks[taskCount - 1], taskCount);
+                    Task event = new Event(description, from, to);
+                    tasks.add(event);
+                    showTaskAdded(event, tasks.size());
                 } else if (input.equals("delete") || input.startsWith("delete ")) {
-                    int taskIndex = getTaskIndex(input, "delete", taskCount);
-                    Task deletedTask = tasks[taskIndex];
-                    for (int i = taskIndex; i < taskCount - 1; i++) {
-                        tasks[i] = tasks[i + 1];
-                    }
-                    taskCount--;
-                    tasks[taskCount] = null;
-                    showTaskDeleted(deletedTask, taskCount);
+                    int taskIndex = getTaskIndex(input, "delete", tasks.size());
+                    Task deletedTask = tasks.remove(taskIndex);
+                    showTaskDeleted(deletedTask, tasks.size());
                 } else {
                     throw new ChrisException("I don't recognise that command. Try todo, deadline, event, list, mark, unmark, delete, or bye.");
                 }
@@ -105,13 +96,6 @@ public class Chris {
             return taskNumber - 1;
         } catch (NumberFormatException exception) {
             throw new ChrisException("The task number must be a whole number.");
-        }
-    }
-
-    /** Ensures that another task can fit in the fixed-size task array. */
-    private static void ensureSpaceForTask(int taskCount) throws ChrisException {
-        if (taskCount >= MAX_TASKS) {
-            throw new ChrisException("The task list is full. Chris can store up to " + MAX_TASKS + " tasks.");
         }
     }
 
@@ -148,11 +132,11 @@ public class Chris {
     }
 
     /** Displays all stored tasks in the order they were added. */
-    private static void showTasks(Task[] tasks, int taskCount) {
+    private static void showTasks(ArrayList<Task> tasks) {
         System.out.println(SEPARATOR);
         System.out.println(" Here are the tasks in your list:");
-        for (int i = 0; i < taskCount; i++) {
-            System.out.println(" " + (i + 1) + "." + tasks[i]);
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println(" " + (i + 1) + "." + tasks.get(i));
         }
         System.out.println(SEPARATOR);
     }
