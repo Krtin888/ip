@@ -73,8 +73,17 @@ public class Chris {
                     tasks[taskCount] = new Event(description, from, to);
                     taskCount++;
                     showTaskAdded(tasks[taskCount - 1], taskCount);
+                } else if (input.equals("delete") || input.startsWith("delete ")) {
+                    int taskIndex = getTaskIndex(input, "delete", taskCount);
+                    Task deletedTask = tasks[taskIndex];
+                    for (int i = taskIndex; i < taskCount - 1; i++) {
+                        tasks[i] = tasks[i + 1];
+                    }
+                    taskCount--;
+                    tasks[taskCount] = null;
+                    showTaskDeleted(deletedTask, taskCount);
                 } else {
-                    throw new ChrisException("I don't recognise that command. Try todo, deadline, event, list, mark, unmark, or bye.");
+                    throw new ChrisException("I don't recognise that command. Try todo, deadline, event, list, mark, unmark, delete, or bye.");
                 }
             } catch (ChrisException exception) {
                 showError(exception.getMessage());
@@ -161,6 +170,16 @@ public class Chris {
         System.out.println(SEPARATOR);
         System.out.println(" OK, I've marked this task as not done yet:");
         System.out.println("   " + task);
+        System.out.println(SEPARATOR);
+    }
+
+    /** Confirms that a task was deleted and reports the new list size. */
+    private static void showTaskDeleted(Task task, int taskCount) {
+        String taskWord = taskCount == 1 ? "task" : "tasks";
+        System.out.println(SEPARATOR);
+        System.out.println(" Noted. I've removed this task:");
+        System.out.println("   " + task);
+        System.out.println(" Now you have " + taskCount + " " + taskWord + " in the list.");
         System.out.println(SEPARATOR);
     }
 }
