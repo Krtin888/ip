@@ -27,6 +27,10 @@ public class Chris {
                 System.out.println(SEPARATOR);
                 break;
             }
+
+            System.out.println(SEPARATOR);
+            System.out.println(" " + input);
+            System.out.println(SEPARATOR);
         }
     }
 }
