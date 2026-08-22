@@ -1,14 +1,14 @@
 import java.util.Scanner;
 
 /**
- * Runs the Chris chatbot.
+ * Runs the Chris chatbot and manages todos, deadlines, and events.
  */
 public class Chris {
     private static final String SEPARATOR = "____________________________________________________________";
     private static final int MAX_TASKS = 100;
 
     /**
-     * Greets the user and exits when the user enters {@code bye}.
+     * Starts the chatbot, processes commands, and exits on {@code bye}.
      *
      * @param args command-line arguments; not used by this application
      */
@@ -17,87 +17,150 @@ public class Chris {
         Task[] tasks = new Task[MAX_TASKS];
         int taskCount = 0;
 
-        System.out.println(SEPARATOR);
-        System.out.println(" Hello! I'm Chris");
-        System.out.println(" What can I do for you?");
-        System.out.println(SEPARATOR);
-
+        showGreeting();
         while (scanner.hasNextLine()) {
             String input = scanner.nextLine();
-            if (input.equals("bye")) {
-                System.out.println(SEPARATOR);
-                System.out.println(" Bye. Hope to see you again soon!");
-                System.out.println(SEPARATOR);
-                break;
-            } else if (input.equals("list")) {
-                System.out.println(SEPARATOR);
-                System.out.println(" Here are the tasks in your list:");
-                for (int i = 0; i < taskCount; i++) {
-                    System.out.println(" " + (i + 1) + "." + tasks[i]);
+            try {
+                if (input.equals("bye")) {
+                    showFarewell();
+                    break;
+                } else if (input.equals("list")) {
+                    showTasks(tasks, taskCount);
+                } else if (input.equals("mark") || input.startsWith("mark ")) {
+                    int taskIndex = getTaskIndex(input, "mark", taskCount);
+                    tasks[taskIndex].markAsDone();
+                    showTaskMarked(tasks[taskIndex]);
+                } else if (input.equals("unmark") || input.startsWith("unmark ")) {
+                    int taskIndex = getTaskIndex(input, "unmark", taskCount);
+                    tasks[taskIndex].markAsNotDone();
+                    showTaskUnmarked(tasks[taskIndex]);
+                } else if (input.equals("todo") || input.startsWith("todo ")) {
+                    ensureSpaceForTask(taskCount);
+                    String description = input.substring(4).trim();
+                    if (description.isEmpty()) {
+                        throw new ChrisException("A todo needs a description, e.g., todo read book.");
+                    }
+                    tasks[taskCount] = new Todo(description);
+                    taskCount++;
+                    showTaskAdded(tasks[taskCount - 1], taskCount);
+                } else if (input.equals("deadline") || input.startsWith("deadline ")) {
+                    ensureSpaceForTask(taskCount);
+                    int byIndex = input.indexOf(" /by ");
+                    if (byIndex < 0) {
+                        throw new ChrisException("A deadline needs '/by', e.g., deadline return book /by Sunday.");
+                    }
+                    String description = input.substring(8, byIndex).trim();
+                    String by = input.substring(byIndex + 5).trim();
+                    if (description.isEmpty() || by.isEmpty()) {
+                        throw new ChrisException("A deadline needs both a description and a time after '/by'.");
+                    }
+                    tasks[taskCount] = new Deadline(description, by);
+                    taskCount++;
+                    showTaskAdded(tasks[taskCount - 1], taskCount);
+                } else if (input.equals("event") || input.startsWith("event ")) {
+                    ensureSpaceForTask(taskCount);
+                    int fromIndex = input.indexOf(" /from ");
+                    int toIndex = input.indexOf(" /to ");
+                    if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+                        throw new ChrisException("An event needs '/from' and '/to' times.");
+                    }
+                    String description = input.substring(5, fromIndex).trim();
+                    String from = input.substring(fromIndex + 7, toIndex).trim();
+                    String to = input.substring(toIndex + 5).trim();
+                    if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
+                        throw new ChrisException("An event needs a description, start time, and end time.");
+                    }
+                    tasks[taskCount] = new Event(description, from, to);
+                    taskCount++;
+                    showTaskAdded(tasks[taskCount - 1], taskCount);
+                } else {
+                    throw new ChrisException("I don't recognise that command. Try todo, deadline, event, list, mark, unmark, or bye.");
                 }
-                System.out.println(SEPARATOR);
-            } else if (input.startsWith("mark ")) {
-                int taskIndex = Integer.parseInt(input.substring(5)) - 1;
-                tasks[taskIndex].markAsDone();
-                System.out.println(SEPARATOR);
-                System.out.println(" Nice! I've marked this task as done:");
-                System.out.println("   " + tasks[taskIndex]);
-                System.out.println(SEPARATOR);
-            } else if (input.startsWith("unmark ")) {
-                int taskIndex = Integer.parseInt(input.substring(7)) - 1;
-                tasks[taskIndex].markAsNotDone();
-                System.out.println(SEPARATOR);
-                System.out.println(" OK, I've marked this task as not done yet:");
-                System.out.println("   " + tasks[taskIndex]);
-                System.out.println(SEPARATOR);
-            } else if (input.equals("todo")) {
-                showError("A todo needs a description, e.g., todo read book.");
-            } else if (input.startsWith("todo ")) {
-                tasks[taskCount] = new Todo(input.substring(5));
-                taskCount++;
-                System.out.println(SEPARATOR);
-                System.out.println(" Got it. I've added this task:");
-                System.out.println("   " + tasks[taskCount - 1]);
-                System.out.println(" Now you have " + taskCount + " tasks in the list.");
-                System.out.println(SEPARATOR);
-            } else if (input.startsWith("deadline ")) {
-                int byIndex = input.indexOf(" /by ");
-                String description = input.substring(9, byIndex);
-                String by = input.substring(byIndex + 5);
-                tasks[taskCount] = new Deadline(description, by);
-                taskCount++;
-                System.out.println(SEPARATOR);
-                System.out.println(" Got it. I've added this task:");
-                System.out.println("   " + tasks[taskCount - 1]);
-                System.out.println(" Now you have " + taskCount + " tasks in the list.");
-                System.out.println(SEPARATOR);
-            } else if (input.startsWith("event ")) {
-                int fromIndex = input.indexOf(" /from ");
-                int toIndex = input.indexOf(" /to ");
-                String description = input.substring(6, fromIndex);
-                String from = input.substring(fromIndex + 7, toIndex);
-                String to = input.substring(toIndex + 5);
-                tasks[taskCount] = new Event(description, from, to);
-                taskCount++;
-                System.out.println(SEPARATOR);
-                System.out.println(" Got it. I've added this task:");
-                System.out.println("   " + tasks[taskCount - 1]);
-                System.out.println(" Now you have " + taskCount + " tasks in the list.");
-                System.out.println(SEPARATOR);
-            } else {
-                showError("I don't recognise that command. Try todo, deadline, event, list, mark, unmark, or bye.");
+            } catch (ChrisException exception) {
+                showError(exception.getMessage());
             }
         }
     }
 
-    /**
-     * Displays a user-friendly input error.
-     *
-     * @param message explanation of the error
-     */
+    /** Converts a user-facing task number into a valid array index. */
+    private static int getTaskIndex(String input, String command, int taskCount) throws ChrisException {
+        String numberText = input.substring(command.length()).trim();
+        if (numberText.isEmpty()) {
+            throw new ChrisException("Please provide a task number after '" + command + "'.");
+        }
+        try {
+            int taskNumber = Integer.parseInt(numberText);
+            if (taskNumber < 1 || taskNumber > taskCount) {
+                throw new ChrisException("Task " + taskNumber + " is not in the list.");
+            }
+            return taskNumber - 1;
+        } catch (NumberFormatException exception) {
+            throw new ChrisException("The task number must be a whole number.");
+        }
+    }
+
+    /** Ensures that another task can fit in the fixed-size task array. */
+    private static void ensureSpaceForTask(int taskCount) throws ChrisException {
+        if (taskCount >= MAX_TASKS) {
+            throw new ChrisException("The task list is full. Chris can store up to " + MAX_TASKS + " tasks.");
+        }
+    }
+
+    /** Displays a user-friendly input error. */
     private static void showError(String message) {
         System.out.println(SEPARATOR);
         System.out.println(" OOPS!!! " + message);
+        System.out.println(SEPARATOR);
+    }
+
+    /** Displays the chatbot's welcome message. */
+    private static void showGreeting() {
+        System.out.println(SEPARATOR);
+        System.out.println(" Hello! I'm Chris");
+        System.out.println(" What can I do for you?");
+        System.out.println(SEPARATOR);
+    }
+
+    /** Displays the chatbot's goodbye message. */
+    private static void showFarewell() {
+        System.out.println(SEPARATOR);
+        System.out.println(" Bye. Hope to see you again soon!");
+        System.out.println(SEPARATOR);
+    }
+
+    /** Confirms that a task was added. */
+    private static void showTaskAdded(Task task, int taskCount) {
+        String taskWord = taskCount == 1 ? "task" : "tasks";
+        System.out.println(SEPARATOR);
+        System.out.println(" Got it. I've added this task:");
+        System.out.println("   " + task);
+        System.out.println(" Now you have " + taskCount + " " + taskWord + " in the list.");
+        System.out.println(SEPARATOR);
+    }
+
+    /** Displays all stored tasks in the order they were added. */
+    private static void showTasks(Task[] tasks, int taskCount) {
+        System.out.println(SEPARATOR);
+        System.out.println(" Here are the tasks in your list:");
+        for (int i = 0; i < taskCount; i++) {
+            System.out.println(" " + (i + 1) + "." + tasks[i]);
+        }
+        System.out.println(SEPARATOR);
+    }
+
+    /** Confirms that a task was marked as completed. */
+    private static void showTaskMarked(Task task) {
+        System.out.println(SEPARATOR);
+        System.out.println(" Nice! I've marked this task as done:");
+        System.out.println("   " + task);
+        System.out.println(SEPARATOR);
+    }
+
+    /** Confirms that a task was marked as incomplete. */
+    private static void showTaskUnmarked(Task task) {
+        System.out.println(SEPARATOR);
+        System.out.println(" OK, I've marked this task as not done yet:");
+        System.out.println("   " + task);
         System.out.println(SEPARATOR);
     }
 }
