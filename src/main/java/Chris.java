@@ -51,7 +51,7 @@ public class Chris {
                 System.out.println("   " + tasks[taskIndex]);
                 System.out.println(SEPARATOR);
             } else if (input.startsWith("todo ")) {
-                tasks[taskCount] = new Task(input.substring(5));
+                tasks[taskCount] = new Todo(input.substring(5));
                 taskCount++;
                 System.out.println(SEPARATOR);
                 System.out.println(" Got it. I've added this task:");
@@ -62,7 +62,7 @@ public class Chris {
                 int byIndex = input.indexOf(" /by ");
                 String description = input.substring(9, byIndex);
                 String by = input.substring(byIndex + 5);
-                tasks[taskCount] = new Task(description, by);
+                tasks[taskCount] = new Deadline(description, by);
                 taskCount++;
                 System.out.println(SEPARATOR);
                 System.out.println(" Got it. I've added this task:");
@@ -75,7 +75,7 @@ public class Chris {
                 String description = input.substring(6, fromIndex);
                 String from = input.substring(fromIndex + 7, toIndex);
                 String to = input.substring(toIndex + 5);
-                tasks[taskCount] = new Task(description, from, to);
+                tasks[taskCount] = new Event(description, from, to);
                 taskCount++;
                 System.out.println(SEPARATOR);
                 System.out.println(" Got it. I've added this task:");
