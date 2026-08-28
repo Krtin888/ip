@@ -188,3 +188,9 @@ ____________________________________________________________
 - Enter a malformed date and verify Chris explains the expected format without exiting.
 
 JUnit covers Parser task-number validation and Storage save/load behavior; run it with `./gradlew test`.
+
+# Find checks
+
+- Add tasks containing `book` in different letter cases and one unrelated task.
+- Run `find book`; verify only matching tasks are shown and numbered from 1.
+- Run `find` without a keyword; verify Chris explains that a keyword is required.

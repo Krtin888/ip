@@ -36,6 +36,11 @@ public class Task {
         return isDone ? "X" : " ";
     }
 
+    /** Returns whether the description contains the keyword, ignoring case. */
+    public boolean matches(String keyword) {
+        return description.toLowerCase().contains(keyword.toLowerCase());
+    }
+
     /** Returns this task in the stable format used by the data file. */
     public String toDataString() {
         return "T | " + (isDone ? "1" : "0") + " | " + description;
