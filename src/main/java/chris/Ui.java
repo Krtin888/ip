@@ -1,3 +1,5 @@
+package chris;
+
 import java.util.List;
 import java.util.Scanner;
 
@@ -35,4 +37,3 @@ public class Ui {
         System.out.println(SEPARATOR);
     }
 }
-package chris;

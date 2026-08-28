@@ -1,3 +1,5 @@
+package chris;
+
 /** Represents a task without an attached date or time. */
 public class Todo extends Task {
     /**
@@ -14,4 +16,3 @@ public class Todo extends Task {
         return "[T]" + super.toString();
     }
 }
-package chris;

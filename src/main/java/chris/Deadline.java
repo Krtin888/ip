@@ -1,3 +1,5 @@
+package chris;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -28,4 +30,3 @@ public class Deadline extends Task {
         return "[D]" + super.toString() + " (by: " + by.format(OUTPUT_FORMAT) + ")";
     }
 }
-package chris;

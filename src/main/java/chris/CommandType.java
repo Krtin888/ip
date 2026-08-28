@@ -1,3 +1,5 @@
+package chris;
+
 /**
  * Identifies the command requested by the user.
  */
@@ -33,4 +35,3 @@ public enum CommandType {
         };
     }
 }
-package chris;

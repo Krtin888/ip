@@ -1,3 +1,5 @@
+package chris;
+
 /**
  * Represents an input error that Chris can explain to the user.
  */
@@ -14,4 +16,3 @@ public class ChrisException extends Exception {
         super(message);
     }
 }
-package chris;

@@ -1,3 +1,5 @@
+package chris;
+
 /** Interprets user commands and their task numbers. */
 public class Parser {
     /** Returns the type of the supplied command. */
@@ -22,4 +24,3 @@ public class Parser {
         }
     }
 }
-package chris;

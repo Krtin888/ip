@@ -1,3 +1,5 @@
+package chris;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -33,4 +35,3 @@ public class Event extends Task {
                 + " to: " + to.format(OUTPUT_FORMAT) + ")";
     }
 }
-package chris;
