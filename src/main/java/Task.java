@@ -34,6 +34,11 @@ public class Task {
         return isDone ? "X" : " ";
     }
 
+    /** Returns this task in the stable format used by the data file. */
+    public String toDataString() {
+        return "T | " + (isDone ? "1" : "0") + " | " + description;
+    }
+
     @Override
     public String toString() {
         return "[" + getStatusIcon() + "] " + description;

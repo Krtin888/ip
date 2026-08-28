@@ -175,3 +175,8 @@ ____________________________________________________________
  Bye. Hope to see you again soon!
 ____________________________________________________________
 ```
+# Persistence checks
+
+- Start with no `data/chris.txt`; add tasks and verify the directory and file are created.
+- Restart Chris and verify saved todo, deadline, event, and completion status are restored.
+- Mark, unmark, and delete tasks; restart and verify each change was saved.
