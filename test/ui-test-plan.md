@@ -180,3 +180,9 @@ ____________________________________________________________
 - Start with no `data/chris.txt`; add tasks and verify the directory and file are created.
 - Restart Chris and verify saved todo, deadline, event, and completion status are restored.
 - Mark, unmark, and delete tasks; restart and verify each change was saved.
+
+# Date and time checks
+
+- Add a deadline using `deadline return book /by 2026-12-02 1800`; verify it displays as `Dec 02 2026, 6:00PM`.
+- Add an event with `/from` and `/to` values in `yyyy-MM-dd HHmm`; verify both are reformatted.
+- Enter a malformed date and verify Chris explains the expected format without exiting.
