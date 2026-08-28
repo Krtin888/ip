@@ -186,3 +186,5 @@ ____________________________________________________________
 - Add a deadline using `deadline return book /by 2026-12-02 1800`; verify it displays as `Dec 02 2026, 6:00PM`.
 - Add an event with `/from` and `/to` values in `yyyy-MM-dd HHmm`; verify both are reformatted.
 - Enter a malformed date and verify Chris explains the expected format without exiting.
+
+JUnit covers Parser task-number validation and Storage save/load behavior; run it with `./gradlew test`.
