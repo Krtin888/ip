@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Loads and saves tasks using an operating-system-independent relative path. */
+/** Loads and saves tasks using an operating-system-independent path. */
 public class Storage {
     private final Path filePath;
 
