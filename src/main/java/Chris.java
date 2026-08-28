@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.time.format.DateTimeParseException;
 
 /**
  * Runs the Chris chatbot and manages todos, deadlines, and events.
@@ -91,6 +92,8 @@ public class Chris {
                 } else {
                     throw new ChrisException("I don't recognise that command. Try todo, deadline, event, list, mark, unmark, delete, or bye.");
                 }
+            } catch (DateTimeParseException exception) {
+                showError("Use dates and times in yyyy-MM-dd HHmm format, e.g., 2026-08-30 1800.");
             } catch (ChrisException exception) {
                 showError(exception.getMessage());
             }
