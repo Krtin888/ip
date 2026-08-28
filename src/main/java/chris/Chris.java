@@ -94,6 +94,12 @@ public class Chris {
                     Task deletedTask = tasks.delete(taskIndex);
                     saveTasks();
                     showTaskDeleted(deletedTask);
+                } else if (commandType == CommandType.FIND) {
+                    String keyword = input.substring(4).trim();
+                    if (keyword.isEmpty()) {
+                        throw new ChrisException("Please provide a keyword after 'find'.");
+                    }
+                    ui.showTasks(tasks.find(keyword));
                 } else {
                     throw new ChrisException("I don't recognise that command. Try todo, deadline, event, "
                             + "list, mark, unmark, delete, or bye.");

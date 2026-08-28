@@ -36,4 +36,9 @@ public class TaskList {
     public List<Task> asList() {
         return List.copyOf(tasks);
     }
+
+    /** Returns tasks whose descriptions contain the keyword, ignoring case. */
+    public List<Task> find(String keyword) {
+        return tasks.stream().filter(task -> task.matches(keyword)).toList();
+    }
 }
