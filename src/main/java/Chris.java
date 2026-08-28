@@ -6,6 +6,7 @@ import java.util.Scanner;
  */
 public class Chris {
     private static final String SEPARATOR = "____________________________________________________________";
+    private static final String DATA_FILE_PATH = "data/chris.txt";
 
     /**
      * Starts the chatbot, processes commands, and exits on {@code bye}.
@@ -14,7 +15,14 @@ public class Chris {
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        ArrayList<Task> tasks = new ArrayList<>();
+        Storage storage = new Storage(DATA_FILE_PATH);
+        ArrayList<Task> tasks;
+        try {
+            tasks = storage.load();
+        } catch (ChrisException exception) {
+            showError(exception.getMessage());
+            tasks = new ArrayList<>();
+        }
 
         showGreeting();
         while (scanner.hasNextLine()) {
@@ -29,10 +37,12 @@ public class Chris {
                 } else if (commandType == CommandType.MARK) {
                     int taskIndex = getTaskIndex(input, "mark", tasks.size());
                     tasks.get(taskIndex).markAsDone();
+                    storage.save(tasks);
                     showTaskMarked(tasks.get(taskIndex));
                 } else if (commandType == CommandType.UNMARK) {
                     int taskIndex = getTaskIndex(input, "unmark", tasks.size());
                     tasks.get(taskIndex).markAsNotDone();
+                    storage.save(tasks);
                     showTaskUnmarked(tasks.get(taskIndex));
                 } else if (commandType == CommandType.TODO) {
                     String description = input.substring(4).trim();
@@ -41,6 +51,7 @@ public class Chris {
                     }
                     Task todo = new Todo(description);
                     tasks.add(todo);
+                    storage.save(tasks);
                     showTaskAdded(todo, tasks.size());
                 } else if (commandType == CommandType.DEADLINE) {
                     int byIndex = input.indexOf(" /by ");
@@ -54,6 +65,7 @@ public class Chris {
                     }
                     Task deadline = new Deadline(description, by);
                     tasks.add(deadline);
+                    storage.save(tasks);
                     showTaskAdded(deadline, tasks.size());
                 } else if (commandType == CommandType.EVENT) {
                     int fromIndex = input.indexOf(" /from ");
@@ -69,10 +81,12 @@ public class Chris {
                     }
                     Task event = new Event(description, from, to);
                     tasks.add(event);
+                    storage.save(tasks);
                     showTaskAdded(event, tasks.size());
                 } else if (commandType == CommandType.DELETE) {
                     int taskIndex = getTaskIndex(input, "delete", tasks.size());
                     Task deletedTask = tasks.remove(taskIndex);
+                    storage.save(tasks);
                     showTaskDeleted(deletedTask, tasks.size());
                 } else {
                     throw new ChrisException("I don't recognise that command. Try todo, deadline, event, list, mark, unmark, delete, or bye.");
