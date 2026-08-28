@@ -1,13 +1,15 @@
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.time.format.DateTimeParseException;
 
 /**
  * Runs the Chris chatbot and manages todos, deadlines, and events.
  */
 public class Chris {
-    private static final String SEPARATOR = "____________________________________________________________";
     private static final String DATA_FILE_PATH = "data/chris.txt";
+    private final Parser parser = new Parser();
+    private final Storage storage = new Storage(DATA_FILE_PATH);
+    private final Ui ui = new Ui();
+    private TaskList tasks;
 
     /**
      * Starts the chatbot, processes commands, and exits on {@code bye}.
@@ -15,36 +17,37 @@ public class Chris {
      * @param args command-line arguments; not used by this application
      */
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        Storage storage = new Storage(DATA_FILE_PATH);
-        ArrayList<Task> tasks;
-        try {
-            tasks = storage.load();
-        } catch (ChrisException exception) {
-            showError(exception.getMessage());
-            tasks = new ArrayList<>();
-        }
+        new Chris().run();
+    }
 
-        showGreeting();
-        while (scanner.hasNextLine()) {
-            String input = scanner.nextLine();
+    /** Loads saved tasks and processes commands until the user exits. */
+    public void run() {
+        try {
+            tasks = new TaskList(storage.load());
+        } catch (ChrisException exception) {
+            ui.showMessage(" OOPS!!! " + exception.getMessage());
+            tasks = new TaskList(new ArrayList<>());
+        }
+        ui.showMessage(" Hello! I'm Chris", " What can I do for you?");
+        while (ui.hasNextCommand()) {
+            String input = ui.readCommand();
             try {
-                CommandType commandType = CommandType.from(input);
+                CommandType commandType = parser.parseCommandType(input);
                 if (commandType == CommandType.BYE) {
-                    showFarewell();
+                    ui.showMessage(" Bye. Hope to see you again soon!");
                     break;
                 } else if (commandType == CommandType.LIST) {
-                    showTasks(tasks);
+                    ui.showTasks(tasks.asList());
                 } else if (commandType == CommandType.MARK) {
-                    int taskIndex = getTaskIndex(input, "mark", tasks.size());
+                    int taskIndex = parser.parseTaskIndex(input, "mark", tasks.size());
                     tasks.get(taskIndex).markAsDone();
-                    storage.save(tasks);
-                    showTaskMarked(tasks.get(taskIndex));
+                    saveTasks();
+                    ui.showMessage(" Nice! I've marked this task as done:", "   " + tasks.get(taskIndex));
                 } else if (commandType == CommandType.UNMARK) {
-                    int taskIndex = getTaskIndex(input, "unmark", tasks.size());
+                    int taskIndex = parser.parseTaskIndex(input, "unmark", tasks.size());
                     tasks.get(taskIndex).markAsNotDone();
-                    storage.save(tasks);
-                    showTaskUnmarked(tasks.get(taskIndex));
+                    saveTasks();
+                    ui.showMessage(" OK, I've marked this task as not done yet:", "   " + tasks.get(taskIndex));
                 } else if (commandType == CommandType.TODO) {
                     String description = input.substring(4).trim();
                     if (description.isEmpty()) {
@@ -52,8 +55,8 @@ public class Chris {
                     }
                     Task todo = new Todo(description);
                     tasks.add(todo);
-                    storage.save(tasks);
-                    showTaskAdded(todo, tasks.size());
+                    saveTasks();
+                    showTaskAdded(todo);
                 } else if (commandType == CommandType.DEADLINE) {
                     int byIndex = input.indexOf(" /by ");
                     if (byIndex < 0) {
@@ -66,8 +69,8 @@ public class Chris {
                     }
                     Task deadline = new Deadline(description, by);
                     tasks.add(deadline);
-                    storage.save(tasks);
-                    showTaskAdded(deadline, tasks.size());
+                    saveTasks();
+                    showTaskAdded(deadline);
                 } else if (commandType == CommandType.EVENT) {
                     int fromIndex = input.indexOf(" /from ");
                     int toIndex = input.indexOf(" /to ");
@@ -82,106 +85,39 @@ public class Chris {
                     }
                     Task event = new Event(description, from, to);
                     tasks.add(event);
-                    storage.save(tasks);
-                    showTaskAdded(event, tasks.size());
+                    saveTasks();
+                    showTaskAdded(event);
                 } else if (commandType == CommandType.DELETE) {
-                    int taskIndex = getTaskIndex(input, "delete", tasks.size());
-                    Task deletedTask = tasks.remove(taskIndex);
-                    storage.save(tasks);
-                    showTaskDeleted(deletedTask, tasks.size());
+                    int taskIndex = parser.parseTaskIndex(input, "delete", tasks.size());
+                    Task deletedTask = tasks.delete(taskIndex);
+                    saveTasks();
+                    showTaskDeleted(deletedTask);
                 } else {
                     throw new ChrisException("I don't recognise that command. Try todo, deadline, event, list, mark, unmark, delete, or bye.");
                 }
             } catch (DateTimeParseException exception) {
-                showError("Use dates and times in yyyy-MM-dd HHmm format, e.g., 2026-08-30 1800.");
+                ui.showMessage(" OOPS!!! Use dates and times in yyyy-MM-dd HHmm format, e.g., 2026-08-30 1800.");
             } catch (ChrisException exception) {
-                showError(exception.getMessage());
+                ui.showMessage(" OOPS!!! " + exception.getMessage());
             }
         }
     }
 
-    /** Converts a user-facing task number into a valid array index. */
-    private static int getTaskIndex(String input, String command, int taskCount) throws ChrisException {
-        String numberText = input.substring(command.length()).trim();
-        if (numberText.isEmpty()) {
-            throw new ChrisException("Please provide a task number after '" + command + "'.");
-        }
-        try {
-            int taskNumber = Integer.parseInt(numberText);
-            if (taskNumber < 1 || taskNumber > taskCount) {
-                throw new ChrisException("Task " + taskNumber + " is not in the list.");
-            }
-            return taskNumber - 1;
-        } catch (NumberFormatException exception) {
-            throw new ChrisException("The task number must be a whole number.");
-        }
-    }
-
-    /** Displays a user-friendly input error. */
-    private static void showError(String message) {
-        System.out.println(SEPARATOR);
-        System.out.println(" OOPS!!! " + message);
-        System.out.println(SEPARATOR);
-    }
-
-    /** Displays the chatbot's welcome message. */
-    private static void showGreeting() {
-        System.out.println(SEPARATOR);
-        System.out.println(" Hello! I'm Chris");
-        System.out.println(" What can I do for you?");
-        System.out.println(SEPARATOR);
-    }
-
-    /** Displays the chatbot's goodbye message. */
-    private static void showFarewell() {
-        System.out.println(SEPARATOR);
-        System.out.println(" Bye. Hope to see you again soon!");
-        System.out.println(SEPARATOR);
+    private void saveTasks() throws ChrisException {
+        storage.save(tasks.asList());
     }
 
     /** Confirms that a task was added. */
-    private static void showTaskAdded(Task task, int taskCount) {
-        String taskWord = taskCount == 1 ? "task" : "tasks";
-        System.out.println(SEPARATOR);
-        System.out.println(" Got it. I've added this task:");
-        System.out.println("   " + task);
-        System.out.println(" Now you have " + taskCount + " " + taskWord + " in the list.");
-        System.out.println(SEPARATOR);
-    }
-
-    /** Displays all stored tasks in the order they were added. */
-    private static void showTasks(ArrayList<Task> tasks) {
-        System.out.println(SEPARATOR);
-        System.out.println(" Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            System.out.println(" " + (i + 1) + "." + tasks.get(i));
-        }
-        System.out.println(SEPARATOR);
-    }
-
-    /** Confirms that a task was marked as completed. */
-    private static void showTaskMarked(Task task) {
-        System.out.println(SEPARATOR);
-        System.out.println(" Nice! I've marked this task as done:");
-        System.out.println("   " + task);
-        System.out.println(SEPARATOR);
-    }
-
-    /** Confirms that a task was marked as incomplete. */
-    private static void showTaskUnmarked(Task task) {
-        System.out.println(SEPARATOR);
-        System.out.println(" OK, I've marked this task as not done yet:");
-        System.out.println("   " + task);
-        System.out.println(SEPARATOR);
+    private void showTaskAdded(Task task) {
+        String taskWord = tasks.size() == 1 ? "task" : "tasks";
+        ui.showMessage(" Got it. I've added this task:", "   " + task,
+                " Now you have " + tasks.size() + " " + taskWord + " in the list.");
     }
 
     /** Confirms that a task was deleted and reports the new list size. */
-    private static void showTaskDeleted(Task task, int taskCount) {
-        String taskWord = taskCount == 1 ? "task" : "tasks";
-        System.out.println(SEPARATOR);
-        System.out.println(" Noted. I've removed this task:");
-        System.out.println("   " + task);
-        System.out.println(" Now you have " + taskCount + " " + taskWord + " in the list.");
-        System.out.println(SEPARATOR);
+    private void showTaskDeleted(Task task) {
+        String taskWord = tasks.size() == 1 ? "task" : "tasks";
+        ui.showMessage(" Noted. I've removed this task:", "   " + task,
+                " Now you have " + tasks.size() + " " + taskWord + " in the list.");
     }
 }
