@@ -1,0 +1,31 @@
+.root {
+    -fx-background-color: #f4f6f8;
+    -fx-font-family: "Arial";
+}
+
+.scroll-pane,
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.label {
+    -fx-background-radius: 12;
+    -fx-padding: 10;
+}
+
+.user-dialog .label {
+    -fx-background-color: #d9ecff;
+}
+
+.chris-dialog .label {
+    -fx-background-color: #e7e9ec;
+}
+
+.user-dialog #avatar,
+.chris-dialog #avatar {
+    -fx-background-color: #334155;
+    -fx-background-radius: 22;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 0;
+}
