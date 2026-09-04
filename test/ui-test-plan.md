@@ -4,14 +4,14 @@ Each case is run in a fresh Chris process. Expected output is compared exactly, 
 
 ## TC-1 Task lifecycle
 
-**Aim:** Verify creation, listing, marking, unmarking, arbitrary date text, and exit behavior.
+**Aim:** Verify creation, listing, marking, unmarking, formatted dates, and exit behavior.
 
 ### Input
 
 ```text
 todo read book
-deadline return book /by no idea :-p
-event project meeting /from Mon 2pm /to 4pm
+deadline return book /by 2026-12-02 1800
+event project meeting /from 2026-12-03 1400 /to 2026-12-03 1600
 mark 2
 unmark 2
 list
@@ -32,27 +32,27 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Got it. I've added this task:
-   [D][ ] return book (by: no idea :-p)
+   [D][ ] return book (by: Dec 02 2026, 6:00pm)
  Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
  Got it. I've added this task:
-   [E][ ] project meeting (from: Mon 2pm to: 4pm)
+   [E][ ] project meeting (from: Dec 03 2026, 2:00pm to: Dec 03 2026, 4:00pm)
  Now you have 3 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
  Nice! I've marked this task as done:
-   [D][X] return book (by: no idea :-p)
+   [D][X] return book (by: Dec 02 2026, 6:00pm)
 ____________________________________________________________
 ____________________________________________________________
  OK, I've marked this task as not done yet:
-   [D][ ] return book (by: no idea :-p)
+   [D][ ] return book (by: Dec 02 2026, 6:00pm)
 ____________________________________________________________
 ____________________________________________________________
  Here are the tasks in your list:
  1.[T][ ] read book
- 2.[D][ ] return book (by: no idea :-p)
- 3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+ 2.[D][ ] return book (by: Dec 02 2026, 6:00pm)
+ 3.[E][ ] project meeting (from: Dec 03 2026, 2:00pm to: Dec 03 2026, 4:00pm)
 ____________________________________________________________
 ____________________________________________________________
  Bye. Hope to see you again soon!
@@ -124,8 +124,8 @@ ____________________________________________________________
 
 ```text
 todo first task
-deadline second task /by tomorrow
-event third task /from 2pm /to 3pm
+deadline second task /by 2026-12-02 1800
+event third task /from 2026-12-03 1400 /to 2026-12-03 1500
 delete 2
 list
 delete two
@@ -147,23 +147,23 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Got it. I've added this task:
-   [D][ ] second task (by: tomorrow)
+   [D][ ] second task (by: Dec 02 2026, 6:00pm)
  Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
  Got it. I've added this task:
-   [E][ ] third task (from: 2pm to: 3pm)
+   [E][ ] third task (from: Dec 03 2026, 2:00pm to: Dec 03 2026, 3:00pm)
  Now you have 3 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
  Noted. I've removed this task:
-   [D][ ] second task (by: tomorrow)
+   [D][ ] second task (by: Dec 02 2026, 6:00pm)
  Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
  Here are the tasks in your list:
  1.[T][ ] first task
- 2.[E][ ] third task (from: 2pm to: 3pm)
+ 2.[E][ ] third task (from: Dec 03 2026, 2:00pm to: Dec 03 2026, 3:00pm)
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! The task number must be a whole number.
@@ -183,7 +183,7 @@ ____________________________________________________________
 
 # Date and time checks
 
-- Add a deadline using `deadline return book /by 2026-12-02 1800`; verify it displays as `Dec 02 2026, 6:00PM`.
+- Add a deadline using `deadline return book /by 2026-12-02 1800`; verify it displays as `Dec 02 2026, 6:00pm`.
 - Add an event with `/from` and `/to` values in `yyyy-MM-dd HHmm`; verify both are reformatted.
 - Enter a malformed date and verify Chris explains the expected format without exiting.
 
@@ -194,3 +194,12 @@ JUnit covers Parser task-number validation and Storage save/load behavior; run i
 - Add tasks containing `book` in different letter cases and one unrelated task.
 - Run `find book`; verify only matching tasks are shown and numbered from 1.
 - Run `find` without a keyword; verify Chris explains that a keyword is required.
+
+# JavaFX GUI checks
+
+- Run Chris with `./gradlew run`; verify the window opens with Chris's greeting.
+- Enter `todo read book` by pressing Enter; verify the user command and Chris response appear on opposite sides.
+- Enter `list` by clicking Send; verify the saved task appears and the input field is cleared.
+- Add enough commands to fill the window; verify the conversation automatically scrolls to the newest message.
+- Enter a blank command; verify no dialog boxes are added.
+- Enter `bye`; verify the farewell appears and the window closes after a short delay.
