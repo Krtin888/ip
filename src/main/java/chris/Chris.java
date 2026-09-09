@@ -97,74 +97,18 @@ public class Chris {
         isExitRequested = false;
         try {
             CommandType commandType = parser.parseCommandType(input);
-            if (commandType == CommandType.BYE) {
-                outputUi.showMessage(" Bye. Hope to see you again soon!");
-                isExitRequested = true;
-            } else if (commandType == CommandType.LIST) {
-                outputUi.showTasks(tasks.asList());
-            } else if (commandType == CommandType.MARK) {
-                int taskIndex = parser.parseTaskIndex(input, "mark", tasks.size());
-                tasks.get(taskIndex).markAsDone();
-                saveTasks();
-                outputUi.showMessage(" Nice! I've marked this task as done:", "   " + tasks.get(taskIndex));
-            } else if (commandType == CommandType.UNMARK) {
-                int taskIndex = parser.parseTaskIndex(input, "unmark", tasks.size());
-                tasks.get(taskIndex).markAsNotDone();
-                saveTasks();
-                outputUi.showMessage(" OK, I've marked this task as not done yet:", "   " + tasks.get(taskIndex));
-            } else if (commandType == CommandType.TODO) {
-                String description = input.substring(4).trim();
-                if (description.isEmpty()) {
-                    throw new ChrisException("A todo needs a description, e.g., todo read book.");
-                }
-                Task todo = new Todo(description);
-                tasks.add(todo);
-                saveTasks();
-                showTaskAdded(todo, outputUi);
-            } else if (commandType == CommandType.DEADLINE) {
-                int byIndex = input.indexOf(" /by ");
-                if (byIndex < 0) {
-                    throw new ChrisException("A deadline needs '/by', e.g., deadline return book /by Sunday.");
-                }
-                String description = input.substring(8, byIndex).trim();
-                String by = input.substring(byIndex + 5).trim();
-                if (description.isEmpty() || by.isEmpty()) {
-                    throw new ChrisException("A deadline needs both a description and a time after '/by'.");
-                }
-                Task deadline = new Deadline(description, by);
-                tasks.add(deadline);
-                saveTasks();
-                showTaskAdded(deadline, outputUi);
-            } else if (commandType == CommandType.EVENT) {
-                int fromIndex = input.indexOf(" /from ");
-                int toIndex = input.indexOf(" /to ");
-                if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-                    throw new ChrisException("An event needs '/from' and '/to' times.");
-                }
-                String description = input.substring(5, fromIndex).trim();
-                String from = input.substring(fromIndex + 7, toIndex).trim();
-                String to = input.substring(toIndex + 5).trim();
-                if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-                    throw new ChrisException("An event needs a description, start time, and end time.");
-                }
-                Task event = new Event(description, from, to);
-                tasks.add(event);
-                saveTasks();
-                showTaskAdded(event, outputUi);
-            } else if (commandType == CommandType.DELETE) {
-                int taskIndex = parser.parseTaskIndex(input, "delete", tasks.size());
-                Task deletedTask = tasks.delete(taskIndex);
-                saveTasks();
-                showTaskDeleted(deletedTask, outputUi);
-            } else if (commandType == CommandType.FIND) {
-                String keyword = input.substring(4).trim();
-                if (keyword.isEmpty()) {
-                    throw new ChrisException("Please provide a keyword after 'find'.");
-                }
-                outputUi.showTasks(tasks.find(keyword));
-            } else {
-                throw new ChrisException("I don't recognise that command. Try todo, deadline, event, "
-                        + "list, mark, unmark, delete, or bye.");
+            switch (commandType) {
+            case BYE -> handleBye(outputUi);
+            case LIST -> outputUi.showTasks(tasks.asList());
+            case MARK -> handleMark(input, outputUi);
+            case UNMARK -> handleUnmark(input, outputUi);
+            case TODO -> handleTodo(input, outputUi);
+            case DEADLINE -> handleDeadline(input, outputUi);
+            case EVENT -> handleEvent(input, outputUi);
+            case DELETE -> handleDelete(input, outputUi);
+            case FIND -> handleFind(input, outputUi);
+            default -> throw new ChrisException("I don't recognise that command. Try todo, deadline, event, "
+                    + "list, mark, unmark, delete, or bye.");
             }
         } catch (DateTimeParseException exception) {
             outputUi.showMessage(" OOPS!!! Use dates and times in yyyy-MM-dd HHmm format, "
@@ -172,6 +116,82 @@ public class Chris {
         } catch (ChrisException exception) {
             outputUi.showMessage(" OOPS!!! " + exception.getMessage());
         }
+    }
+
+    private void handleBye(Ui outputUi) {
+        outputUi.showMessage(" Bye. Hope to see you again soon!");
+        isExitRequested = true;
+    }
+
+    private void handleMark(String input, Ui outputUi) throws ChrisException {
+        int taskIndex = parser.parseTaskIndex(input, "mark", tasks.size());
+        tasks.get(taskIndex).markAsDone();
+        saveTasks();
+        outputUi.showMessage(" Nice! I've marked this task as done:", "   " + tasks.get(taskIndex));
+    }
+
+    private void handleUnmark(String input, Ui outputUi) throws ChrisException {
+        int taskIndex = parser.parseTaskIndex(input, "unmark", tasks.size());
+        tasks.get(taskIndex).markAsNotDone();
+        saveTasks();
+        outputUi.showMessage(" OK, I've marked this task as not done yet:", "   " + tasks.get(taskIndex));
+    }
+
+    private void handleTodo(String input, Ui outputUi) throws ChrisException {
+        String description = input.substring(4).trim();
+        if (description.isEmpty()) {
+            throw new ChrisException("A todo needs a description, e.g., todo read book.");
+        }
+        addTask(new Todo(description), outputUi);
+    }
+
+    private void handleDeadline(String input, Ui outputUi) throws ChrisException {
+        int byIndex = input.indexOf(" /by ");
+        if (byIndex < 0) {
+            throw new ChrisException("A deadline needs '/by', e.g., deadline return book /by Sunday.");
+        }
+        String description = input.substring(8, byIndex).trim();
+        String by = input.substring(byIndex + 5).trim();
+        if (description.isEmpty() || by.isEmpty()) {
+            throw new ChrisException("A deadline needs both a description and a time after '/by'.");
+        }
+        addTask(new Deadline(description, by), outputUi);
+    }
+
+    private void handleEvent(String input, Ui outputUi) throws ChrisException {
+        int fromIndex = input.indexOf(" /from ");
+        int toIndex = input.indexOf(" /to ");
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new ChrisException("An event needs '/from' and '/to' times.");
+        }
+        String description = input.substring(5, fromIndex).trim();
+        String from = input.substring(fromIndex + 7, toIndex).trim();
+        String to = input.substring(toIndex + 5).trim();
+        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
+            throw new ChrisException("An event needs a description, start time, and end time.");
+        }
+        addTask(new Event(description, from, to), outputUi);
+    }
+
+    private void handleDelete(String input, Ui outputUi) throws ChrisException {
+        int taskIndex = parser.parseTaskIndex(input, "delete", tasks.size());
+        Task deletedTask = tasks.delete(taskIndex);
+        saveTasks();
+        showTaskDeleted(deletedTask, outputUi);
+    }
+
+    private void handleFind(String input, Ui outputUi) throws ChrisException {
+        String keyword = input.substring(4).trim();
+        if (keyword.isEmpty()) {
+            throw new ChrisException("Please provide a keyword after 'find'.");
+        }
+        outputUi.showTasks(tasks.find(keyword));
+    }
+
+    private void addTask(Task task, Ui outputUi) throws ChrisException {
+        tasks.add(task);
+        saveTasks();
+        showTaskAdded(task, outputUi);
     }
 
     private void saveTasks() throws ChrisException {
