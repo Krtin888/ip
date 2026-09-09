@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /** Loads and saves tasks using an operating-system-independent path. */
 public class Storage {
@@ -22,10 +23,9 @@ public class Storage {
             return tasks;
         }
         try {
-            for (String line : Files.readAllLines(filePath)) {
-                tasks.add(parseTask(line));
-            }
-            return tasks;
+            return Files.readAllLines(filePath).stream()
+                    .map(this::parseTask)
+                    .collect(Collectors.toCollection(ArrayList::new));
         } catch (IOException | RuntimeException exception) {
             throw new ChrisException("I could not read the saved tasks: " + exception.getMessage());
         }
