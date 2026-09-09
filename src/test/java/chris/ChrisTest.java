@@ -34,4 +34,15 @@ public class ChrisTest {
         assertEquals("Bye. Hope to see you again soon!", response.strip());
         assertTrue(chris.isExitRequested());
     }
+
+    @Test
+    public void getResponse_help_listsAvailableCommands() {
+        Chris chris = new Chris(temporaryDirectory.resolve("data/tasks.txt").toString());
+
+        String response = chris.getResponse("help");
+
+        assertTrue(response.contains("todo DESCRIPTION"));
+        assertTrue(response.contains("deadline DESCRIPTION /by yyyy-MM-dd HHmm"));
+        assertTrue(response.contains("list | find KEYWORD"));
+    }
 }

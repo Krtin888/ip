@@ -108,8 +108,9 @@ public class Chris {
             case EVENT -> handleEvent(input, outputUi);
             case DELETE -> handleDelete(input, outputUi);
             case FIND -> handleFind(input, outputUi);
+            case HELP -> handleHelp(outputUi);
             default -> throw new ChrisException("I don't recognise that command. Try todo, deadline, event, "
-                    + "list, mark, unmark, delete, or bye.");
+                    + "list, find, mark, unmark, delete, help, or bye.");
             }
         } catch (DateTimeParseException exception) {
             outputUi.showMessage(" OOPS!!! Use dates and times in yyyy-MM-dd HHmm format, "
@@ -187,6 +188,14 @@ public class Chris {
             throw new ChrisException("Please provide a keyword after 'find'.");
         }
         outputUi.showTasks(tasks.find(keyword));
+    }
+
+    private void handleHelp(Ui outputUi) {
+        outputUi.showMessage(" Commands:",
+                " todo DESCRIPTION",
+                " deadline DESCRIPTION /by yyyy-MM-dd HHmm",
+                " event DESCRIPTION /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm",
+                " list | find KEYWORD | mark NUMBER | unmark NUMBER | delete NUMBER | bye");
     }
 
     private void addTask(Task task, Ui outputUi) throws ChrisException {

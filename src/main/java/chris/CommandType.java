@@ -13,6 +13,7 @@ public enum CommandType {
     EVENT,
     DELETE,
     FIND,
+    HELP,
     UNKNOWN;
 
     /**
@@ -33,6 +34,7 @@ public enum CommandType {
         case "event" -> EVENT;
         case "delete" -> DELETE;
         case "find" -> FIND;
+        case "help" -> HELP;
         default -> UNKNOWN;
         };
     }

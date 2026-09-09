@@ -204,3 +204,7 @@ The TaskList test also confirms that Java assertions are enabled during the test
 - Add enough commands to fill the window; verify the conversation automatically scrolls to the newest message.
 - Enter a blank command; verify no dialog boxes are added.
 - Enter `bye`; verify the farewell appears and the window closes after a short delay.
+
+# Help checks
+
+- Enter `help`; verify Chris displays every supported command and the required date-time syntax.
