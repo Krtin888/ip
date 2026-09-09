@@ -94,6 +94,7 @@ public class Chris {
     }
 
     private void executeCommand(String input, Ui outputUi) {
+        assert tasks != null : "Tasks must be initialized before handling commands";
         isExitRequested = false;
         try {
             CommandType commandType = parser.parseCommandType(input);
