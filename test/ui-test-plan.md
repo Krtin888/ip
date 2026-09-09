@@ -188,6 +188,7 @@ ____________________________________________________________
 - Enter a malformed date and verify Chris explains the expected format without exiting.
 
 JUnit covers Parser task-number validation and Storage save/load behavior; run it with `./gradlew test`.
+The TaskList test also confirms that Java assertions are enabled during the test run.
 
 # Find checks
 
