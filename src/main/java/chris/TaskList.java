@@ -9,6 +9,7 @@ public class TaskList {
 
     /** Creates a task list containing the supplied tasks. */
     public TaskList(ArrayList<Task> tasks) {
+        assert tasks != null : "Task collection must be initialized";
         this.tasks = tasks;
     }
 
