@@ -36,6 +36,11 @@ public class Task {
         return isDone ? "X" : " ";
     }
 
+    /** Returns whether the task has been completed. */
+    public boolean isDone() {
+        return isDone;
+    }
+
     /** Returns whether the description contains the keyword, ignoring case. */
     public boolean matches(String keyword) {
         return description.toLowerCase().contains(keyword.toLowerCase());

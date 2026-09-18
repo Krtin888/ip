@@ -88,7 +88,7 @@ ____________________________________________________________
  OOPS!!! A todo needs a description, e.g., todo read book.
 ____________________________________________________________
 ____________________________________________________________
- OOPS!!! I don't recognise that command. Try todo, deadline, event, list, mark, unmark, delete, or bye.
+ OOPS!!! I don't recognise that command. Try todo, deadline, event, list, find, mark, unmark, delete, help, or bye.
 ____________________________________________________________
 ____________________________________________________________
  Got it. I've added this task:
@@ -96,7 +96,7 @@ ____________________________________________________________
  Now you have 1 task in the list.
 ____________________________________________________________
 ____________________________________________________________
- OOPS!!! A deadline needs '/by', e.g., deadline return book /by Sunday.
+ OOPS!!! A deadline needs '/by', e.g., deadline return book /by yyyy-MM-dd HHmm.
 ____________________________________________________________
 ____________________________________________________________
  OOPS!!! An event needs '/from' and '/to' times.
@@ -208,3 +208,19 @@ The TaskList test also confirms that Java assertions are enabled during the test
 # Help checks
 
 - Enter `help`; verify Chris displays every supported command and the required date-time syntax.
+
+# Week 6 error-handling checks
+
+- Add a deadline with `2026-02-30 1800`; verify an `OOPS!!!` message explains that the date must exist and `list` remains unchanged.
+- Add an event with its `/to` earlier than or equal to `/from`; verify it is rejected without changing the task list.
+- Enter `todo bad | separator` and `deadline duplicate /by 2026-12-02 1800 /by 2026-12-03 1800`; verify both are rejected before saving.
+- Enter `list all` and `bye now`; verify each is rejected rather than listing/exiting. Enter a command with leading/trailing spaces and verify it still works.
+- Start with a hand-edited `data/chris.txt` containing an invalid record. Verify Chris identifies the line, announces read-only mode, refuses additions, and does not overwrite the file. Restore a valid file and restart to recover.
+- Start in a writable folder and add two tasks; verify `data/chris.txt` is updated and no temporary file remains. Restart and verify both tasks load.
+
+# Week 6 GUI checks
+
+- Enter an invalid date; verify the reply is visually distinct in a red error bubble, while valid replies use a neutral bubble and user commands use blue bubbles.
+- Resize the window horizontally and vertically. Verify text wraps within the chat area, the command box and Send button remain visible, and the newest message can be reached by scrolling.
+- Add several tasks and verify the narrow layout does not require horizontal scrolling or obscure the task text.
+- Capture a genuine screenshot of the full window with the Chris title and representative task/response before adding it as `docs/Ui.png`.

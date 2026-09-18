@@ -1,11 +1,12 @@
 package chris;
 
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /** Loads and saves tasks using an operating-system-independent path. */
 public class Storage {
@@ -23,30 +24,61 @@ public class Storage {
             return tasks;
         }
         try {
-            return Files.readAllLines(filePath).stream()
-                    .map(this::parseTask)
-                    .collect(Collectors.toCollection(ArrayList::new));
-        } catch (IOException | RuntimeException exception) {
+            List<String> lines = Files.readAllLines(filePath);
+            for (int index = 0; index < lines.size(); index++) {
+                try {
+                    tasks.add(parseTask(lines.get(index)));
+                } catch (RuntimeException exception) {
+                    throw new ChrisException("Invalid saved task on line " + (index + 1)
+                            + " of " + filePath + ".", exception);
+                }
+            }
+            return tasks;
+        } catch (IOException exception) {
             throw new ChrisException("I could not read the saved tasks: " + exception.getMessage());
         }
     }
 
     /** Saves all tasks, creating the data directory when necessary. */
     public void save(List<Task> tasks) throws ChrisException {
+        Path temporaryFile = null;
         try {
             Path parent = filePath.getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
-            Files.write(filePath, tasks.stream().map(Task::toDataString).toList());
+            Path directory = filePath.toAbsolutePath().getParent();
+            temporaryFile = Files.createTempFile(directory, "chris-", ".tmp");
+            Files.write(temporaryFile, tasks.stream().map(Task::toDataString).toList());
+            try {
+                Files.move(temporaryFile, filePath, StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException exception) {
+                Files.move(temporaryFile, filePath, StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException exception) {
             throw new ChrisException("I could not save the tasks: " + exception.getMessage());
+        } finally {
+            if (temporaryFile != null) {
+                try {
+                    Files.deleteIfExists(temporaryFile);
+                } catch (IOException ignored) {
+                    // A failed cleanup does not replace the more useful save result.
+                }
+            }
         }
     }
 
     private Task parseTask(String line) {
         String[] fields = line.split(" \\| ", -1);
-        if (fields.length < 3) {
+        int expectedFields = switch (fields[0]) {
+        case "T" -> 3;
+        case "D" -> 4;
+        case "E" -> 5;
+        default -> throw new IllegalArgumentException("unknown task type");
+        };
+        if (fields.length != expectedFields || fields[2].isBlank()
+                || (!"0".equals(fields[1]) && !"1".equals(fields[1]))) {
             throw new IllegalArgumentException("invalid task record");
         }
         Task task = switch (fields[0]) {

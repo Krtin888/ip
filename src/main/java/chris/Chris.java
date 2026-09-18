@@ -15,6 +15,7 @@ public class Chris {
     private final Ui ui;
     private TaskList tasks;
     private boolean isExitRequested;
+    private boolean isStorageReadOnly;
 
     /** Creates Chris using its default data file. */
     public Chris() {
@@ -88,8 +89,10 @@ public class Chris {
         try {
             tasks = new TaskList(storage.load());
         } catch (ChrisException exception) {
-            outputUi.showMessage(" OOPS!!! " + exception.getMessage());
+            outputUi.showMessage(" OOPS!!! " + exception.getMessage(),
+                    " Saved data was not changed. Chris is read-only until the file is repaired.");
             tasks = new TaskList(new ArrayList<>());
+            isStorageReadOnly = true;
         }
     }
 
@@ -97,24 +100,42 @@ public class Chris {
         assert tasks != null : "Tasks must be initialized before handling commands";
         isExitRequested = false;
         try {
-            CommandType commandType = parser.parseCommandType(input);
+            String command = input.strip();
+            CommandType commandType = parser.parseCommandType(command);
+            if (isStorageReadOnly && (commandType == CommandType.TODO || commandType == CommandType.DEADLINE
+                    || commandType == CommandType.EVENT || commandType == CommandType.MARK
+                    || commandType == CommandType.UNMARK || commandType == CommandType.DELETE)) {
+                throw new ChrisException("Saved data could not be loaded. Repair or back up the data file and "
+                        + "restart Chris before changing tasks.");
+            }
             switch (commandType) {
-            case BYE -> handleBye(outputUi);
-            case LIST -> outputUi.showTasks(tasks.asList());
-            case MARK -> handleMark(input, outputUi);
-            case UNMARK -> handleUnmark(input, outputUi);
-            case TODO -> handleTodo(input, outputUi);
-            case DEADLINE -> handleDeadline(input, outputUi);
-            case EVENT -> handleEvent(input, outputUi);
-            case DELETE -> handleDelete(input, outputUi);
-            case FIND -> handleFind(input, outputUi);
-            case HELP -> handleHelp(outputUi);
+            case BYE -> {
+                requireNoArguments(command, "bye");
+                handleBye(outputUi);
+            }
+            case LIST -> {
+                requireNoArguments(command, "list");
+                outputUi.showTasks(tasks.asList());
+            }
+            case MARK -> handleMark(command, outputUi);
+            case UNMARK -> handleUnmark(command, outputUi);
+            case TODO -> handleTodo(command, outputUi);
+            case DEADLINE -> handleDeadline(command, outputUi);
+            case EVENT -> handleEvent(command, outputUi);
+            case DELETE -> handleDelete(command, outputUi);
+            case FIND -> handleFind(command, outputUi);
+            case HELP -> {
+                requireNoArguments(command, "help");
+                handleHelp(outputUi);
+            }
             default -> throw new ChrisException("I don't recognise that command. Try todo, deadline, event, "
                     + "list, find, mark, unmark, delete, help, or bye.");
             }
         } catch (DateTimeParseException exception) {
             outputUi.showMessage(" OOPS!!! Use dates and times in yyyy-MM-dd HHmm format, "
-                    + "e.g., 2026-08-30 1800.");
+                    + "e.g., 2026-08-30 1800. The date and time must exist.");
+        } catch (IllegalArgumentException exception) {
+            outputUi.showMessage(" OOPS!!! " + exception.getMessage());
         } catch (ChrisException exception) {
             outputUi.showMessage(" OOPS!!! " + exception.getMessage());
         }
@@ -127,15 +148,33 @@ public class Chris {
 
     private void handleMark(String input, Ui outputUi) throws ChrisException {
         int taskIndex = parser.parseTaskIndex(input, "mark", tasks.size());
-        tasks.get(taskIndex).markAsDone();
-        saveTasks();
+        Task task = tasks.get(taskIndex);
+        boolean wasDone = task.isDone();
+        task.markAsDone();
+        try {
+            saveTasks();
+        } catch (ChrisException exception) {
+            if (!wasDone) {
+                task.markAsNotDone();
+            }
+            throw exception;
+        }
         outputUi.showMessage(" Nice! I've marked this task as done:", "   " + tasks.get(taskIndex));
     }
 
     private void handleUnmark(String input, Ui outputUi) throws ChrisException {
         int taskIndex = parser.parseTaskIndex(input, "unmark", tasks.size());
-        tasks.get(taskIndex).markAsNotDone();
-        saveTasks();
+        Task task = tasks.get(taskIndex);
+        boolean wasDone = task.isDone();
+        task.markAsNotDone();
+        try {
+            saveTasks();
+        } catch (ChrisException exception) {
+            if (wasDone) {
+                task.markAsDone();
+            }
+            throw exception;
+        }
         outputUi.showMessage(" OK, I've marked this task as not done yet:", "   " + tasks.get(taskIndex));
     }
 
@@ -144,18 +183,23 @@ public class Chris {
         if (description.isEmpty()) {
             throw new ChrisException("A todo needs a description, e.g., todo read book.");
         }
+        validateDescription(description);
         addTask(new Todo(description), outputUi);
     }
 
     private void handleDeadline(String input, Ui outputUi) throws ChrisException {
         int byIndex = input.indexOf(" /by ");
         if (byIndex < 0) {
-            throw new ChrisException("A deadline needs '/by', e.g., deadline return book /by Sunday.");
+            throw new ChrisException("A deadline needs '/by', e.g., deadline return book /by yyyy-MM-dd HHmm.");
         }
         String description = input.substring(8, byIndex).trim();
         String by = input.substring(byIndex + 5).trim();
-        if (description.isEmpty() || by.isEmpty()) {
+        if (by.isEmpty()) {
             throw new ChrisException("A deadline needs both a description and a time after '/by'.");
+        }
+        validateDescription(description);
+        if (by.contains("/by") || by.contains("/from") || by.contains("/to")) {
+            throw new ChrisException("A deadline needs exactly one '/by' date and time.");
         }
         addTask(new Deadline(description, by), outputUi);
     }
@@ -172,13 +216,22 @@ public class Chris {
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
             throw new ChrisException("An event needs a description, start time, and end time.");
         }
+        validateDescription(description);
+        if (to.contains("/from") || to.contains("/to") || from.contains("/from")) {
+            throw new ChrisException("An event needs exactly one '/from' and one '/to'.");
+        }
         addTask(new Event(description, from, to), outputUi);
     }
 
     private void handleDelete(String input, Ui outputUi) throws ChrisException {
         int taskIndex = parser.parseTaskIndex(input, "delete", tasks.size());
         Task deletedTask = tasks.delete(taskIndex);
-        saveTasks();
+        try {
+            saveTasks();
+        } catch (ChrisException exception) {
+            tasks.insert(taskIndex, deletedTask);
+            throw exception;
+        }
         showTaskDeleted(deletedTask, outputUi);
     }
 
@@ -200,8 +253,28 @@ public class Chris {
 
     private void addTask(Task task, Ui outputUi) throws ChrisException {
         tasks.add(task);
-        saveTasks();
+        try {
+            saveTasks();
+        } catch (ChrisException exception) {
+            tasks.delete(tasks.size() - 1);
+            throw exception;
+        }
         showTaskAdded(task, outputUi);
+    }
+
+    private void validateDescription(String description) throws ChrisException {
+        if (description.isEmpty()) {
+            throw new ChrisException("A task needs a description, e.g., todo read book.");
+        }
+        if (description.contains("|") || description.contains("\n") || description.contains("\r")) {
+            throw new ChrisException("Task descriptions cannot contain '|' or line breaks.");
+        }
+    }
+
+    private void requireNoArguments(String input, String command) throws ChrisException {
+        if (!input.equals(command)) {
+            throw new ChrisException("'" + command + "' does not take extra words.");
+        }
     }
 
     private void saveTasks() throws ChrisException {

@@ -1,6 +1,7 @@
 package chris;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -36,5 +37,31 @@ public class StorageTest {
         Storage storage = new Storage(temporaryDirectory.resolve("missing/tasks.txt").toString());
 
         assertTrue(storage.load().isEmpty());
+    }
+
+    @Test
+    public void load_invalidStatus_reportsLineAndDoesNotRewriteData() throws java.io.IOException {
+        Path file = temporaryDirectory.resolve("data/tasks.txt");
+        java.nio.file.Files.createDirectories(file.getParent());
+        java.nio.file.Files.writeString(file, "T | 0 | good\nT | 2 | bad\n");
+        Storage storage = new Storage(file.toString());
+
+        ChrisException error = assertThrows(ChrisException.class, storage::load);
+
+        assertTrue(error.getMessage().contains("line 2"));
+        assertEquals("T | 0 | good\nT | 2 | bad\n", java.nio.file.Files.readString(file));
+    }
+
+    @Test
+    public void save_replacesDataAndLeavesNoTemporaryFiles() throws Exception {
+        Path file = temporaryDirectory.resolve("data/tasks.txt");
+        Storage storage = new Storage(file.toString());
+        storage.save(java.util.List.of(new Todo("first")));
+        storage.save(java.util.List.of(new Todo("second")));
+
+        assertEquals("T | 0 | second\n", java.nio.file.Files.readString(file));
+        try (var files = java.nio.file.Files.list(file.getParent())) {
+            assertEquals(1, files.count());
+        }
     }
 }

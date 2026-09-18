@@ -23,6 +23,11 @@ public class TaskList {
         return tasks.remove(index);
     }
 
+    /** Restores a task to its former position if saving a deletion fails. */
+    public void insert(int index, Task task) {
+        tasks.add(index, task);
+    }
+
     /** Returns the task at the given zero-based index. */
     public Task get(int index) {
         return tasks.get(index);

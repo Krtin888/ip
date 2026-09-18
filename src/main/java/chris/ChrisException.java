@@ -15,4 +15,9 @@ public class ChrisException extends Exception {
     public ChrisException(String message) {
         super(message);
     }
+
+    /** Creates an explained error while preserving its underlying cause for debugging. */
+    public ChrisException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
