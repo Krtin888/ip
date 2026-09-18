@@ -22,7 +22,7 @@ public class Main extends Application {
         scene.getStylesheets().add(Main.class.getResource("/view/Chris.css").toExternalForm());
 
         stage.setScene(scene);
-        stage.setTitle("Chris");
+        stage.setTitle("Chris - Task Companion");
         stage.setMinHeight(600.0);
         stage.setMinWidth(400.0);
         loader.<MainWindow>getController().setChris(chris);

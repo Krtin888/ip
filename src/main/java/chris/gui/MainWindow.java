@@ -21,6 +21,10 @@ public class MainWindow extends AnchorPane {
     private TextField userInput;
     @FXML
     private Button sendButton;
+    @FXML
+    private Button listQuickButton;
+    @FXML
+    private Button helpQuickButton;
 
     private Chris chris;
 
@@ -28,6 +32,7 @@ public class MainWindow extends AnchorPane {
     @FXML
     public void initialize() {
         dialogContainer.heightProperty().addListener(observable -> scrollPane.setVvalue(1.0));
+        Platform.runLater(userInput::requestFocus);
     }
 
     /** Connects this window to Chris and displays the greeting. */
@@ -41,7 +46,22 @@ public class MainWindow extends AnchorPane {
     /** Displays the entered command and Chris's response. */
     @FXML
     private void handleUserInput() {
-        String input = userInput.getText();
+        submitCommand(userInput.getText(), true);
+    }
+
+    /** Lists tasks without replacing a command the user is still typing. */
+    @FXML
+    private void handleListQuickAction() {
+        submitCommand("list", false);
+    }
+
+    /** Opens the command reference without replacing a draft command. */
+    @FXML
+    private void handleHelpQuickAction() {
+        submitCommand("help", false);
+    }
+
+    private void submitCommand(String input, boolean clearInput) {
         if (input.isBlank()) {
             return;
         }
@@ -50,15 +70,27 @@ public class MainWindow extends AnchorPane {
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input),
                 response.stripLeading().startsWith("OOPS!!!")
-                        ? DialogBox.getErrorDialog(response) : DialogBox.getChrisDialog(response));
-        userInput.clear();
+                        ? DialogBox.getErrorDialog(response)
+                        : isReferenceCommand(input) ? DialogBox.getReferenceDialog(response)
+                                : DialogBox.getChrisDialog(response));
+        if (clearInput) {
+            userInput.clear();
+        }
+        userInput.requestFocus();
 
         if (chris.isExitRequested()) {
             userInput.setDisable(true);
             sendButton.setDisable(true);
+            listQuickButton.setDisable(true);
+            helpQuickButton.setDisable(true);
             PauseTransition exitDelay = new PauseTransition(Duration.seconds(1));
             exitDelay.setOnFinished(event -> Platform.exit());
             exitDelay.play();
         }
+    }
+
+    private boolean isReferenceCommand(String input) {
+        String command = input.strip().split("\\s+", 2)[0];
+        return command.equals("list") || command.equals("find") || command.equals("help");
     }
 }

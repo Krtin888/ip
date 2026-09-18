@@ -199,11 +199,19 @@ The TaskList test also confirms that Java assertions are enabled during the test
 # JavaFX GUI checks
 
 - Run Chris with `./gradlew run`; verify the window opens with Chris's greeting.
+- Verify the title bar says `Chris - Task Companion` and the header, local-tasks badge, and command hint remain visible above and below the conversation.
+- Check that small header and command-hint text remains legible at the default window size.
+- Verify the command field is focused at startup and remains ready for the next command after pressing Enter or clicking Send.
 - Enter `todo read book` by pressing Enter; verify the user command and Chris response appear on opposite sides.
 - Enter `list` by clicking Send; verify the saved task appears and the input field is cleared.
+- Type an unfinished command, then click **List tasks** and **Help**; verify each command runs, its wider monospaced result card is readable, and the unfinished command remains in the input field.
+- Enter `help` and create several long deadline and event descriptions; verify replies wrap inside the window without horizontal scrolling or clipped text.
+- Enter an invalid date; verify the error uses a distinct warm colour and remains readable.
+- Resize the window down to its minimum width and up to a wide window; verify the header, messages, input and Send button do not overlap or disappear.
 - Add enough commands to fill the window; verify the conversation automatically scrolls to the newest message.
 - Enter a blank command; verify no dialog boxes are added.
 - Enter `bye`; verify the farewell appears and the window closes after a short delay.
+- After `bye`, verify the quick-action buttons are disabled during the closing delay.
 
 # Help checks
 

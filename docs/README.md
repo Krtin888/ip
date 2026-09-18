@@ -16,6 +16,8 @@ Chris writes `data/chris.txt` relative to the folder from which you start it. Re
 
 Type `help` at any time for a compact command list. Command words are lowercase. Dates and times use `yyyy-MM-dd HHmm`, with a 24-hour time: `2026-12-02 1800` means 2 December 2026 at 6:00 pm. Impossible dates, such as 30 February, are rejected.
 
+The **List tasks** and **Help** buttons provide quick access to those two commands. They do not erase a command you have started typing.
+
 ## Commands
 
 | What you want to do | Command | Example |
@@ -53,4 +55,4 @@ Invalid commands and dates produce an `OOPS!!!` reply highlighted in red; correc
 
 `list`, `help`, and `bye` take no additional words; `list all` and `bye now` are rejected so typos are not mistaken for successful commands. Leading and trailing spaces around commands are harmless.
 
-The desktop window can be resized. The conversation scrolls to the newest message as you add tasks.
+The desktop window can be resized. The conversation scrolls to the newest message as you add tasks, and the input remains focused so you can continue typing commands.

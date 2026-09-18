@@ -29,6 +29,8 @@ public class DialogBox extends HBox {
             throw new IllegalStateException("Unable to load the dialog box layout.", exception);
         }
         dialog.setText(text);
+        // Keep long task lists readable without making short messages fill the row.
+        dialog.maxWidthProperty().bind(widthProperty().multiply(0.78).subtract(36));
     }
 
     /** Returns a dialog styled for a message entered by the user. */
@@ -45,6 +47,15 @@ public class DialogBox extends HBox {
         dialogBox.avatar.setText("C");
         dialogBox.getStyleClass().add("chris-dialog");
         dialogBox.moveAvatarToLeft();
+        return dialogBox;
+    }
+
+    /** Returns a wider, aligned response for task lists and command help. */
+    public static DialogBox getReferenceDialog(String text) {
+        DialogBox dialogBox = getChrisDialog(text);
+        dialogBox.getStyleClass().add("reference-dialog");
+        dialogBox.dialog.maxWidthProperty().unbind();
+        dialogBox.dialog.maxWidthProperty().bind(dialogBox.widthProperty().subtract(44));
         return dialogBox;
     }
 
