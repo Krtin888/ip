@@ -1,6 +1,7 @@
 .root {
-    -fx-background-color: #f4f6f8;
+    -fx-background-color: #f3f6fa;
     -fx-font-family: "Arial";
+    -fx-font-size: 13px;
 }
 
 .scroll-pane,
@@ -8,24 +9,59 @@
     -fx-background-color: transparent;
 }
 
-.label {
-    -fx-background-radius: 12;
-    -fx-padding: 10;
+#dialogContainer {
+    -fx-padding: 14px 8px;
+}
+
+.user-dialog .label, .chris-dialog .label {
+    -fx-padding: 9px 12px;
+    -fx-background-radius: 12px;
+    -fx-line-spacing: 2px;
 }
 
 .user-dialog .label {
-    -fx-background-color: #d9ecff;
+    -fx-background-color: #dcecff;
+    -fx-text-fill: #152b46;
 }
 
 .chris-dialog .label {
-    -fx-background-color: #e7e9ec;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #24334a;
+}
+
+.error-dialog #dialog {
+    -fx-background-color: #fff0ed;
+    -fx-text-fill: #8f2823;
+    -fx-border-color: #e7a19a;
+    -fx-border-radius: 12px;
 }
 
 .user-dialog #avatar,
 .chris-dialog #avatar {
-    -fx-background-color: #334155;
-    -fx-background-radius: 22;
+    -fx-background-color: #315473;
+    -fx-background-radius: 18px;
     -fx-text-fill: white;
+    -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-padding: 0;
+}
+
+.user-dialog #avatar {
+    -fx-background-color: #64748b;
+}
+
+#userInput {
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    -fx-border-color: #becbda;
+    -fx-border-radius: 8px;
+    -fx-padding: 8px 10px;
+}
+
+#sendButton {
+    -fx-background-color: #315473;
+    -fx-text-fill: white;
+    -fx-background-radius: 8px;
+    -fx-padding: 8px 14px;
+    -fx-cursor: hand;
 }

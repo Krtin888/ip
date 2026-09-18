@@ -33,7 +33,9 @@ public class MainWindow extends AnchorPane {
     /** Connects this window to Chris and displays the greeting. */
     public void setChris(Chris chris) {
         this.chris = chris;
-        dialogContainer.getChildren().add(DialogBox.getChrisDialog(chris.startGui()));
+        String greeting = chris.startGui();
+        dialogContainer.getChildren().add(greeting.contains("OOPS!!!")
+                ? DialogBox.getErrorDialog(greeting) : DialogBox.getChrisDialog(greeting));
     }
 
     /** Displays the entered command and Chris's response. */
@@ -47,7 +49,8 @@ public class MainWindow extends AnchorPane {
         String response = chris.getResponse(input);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input),
-                DialogBox.getChrisDialog(response));
+                response.stripLeading().startsWith("OOPS!!!")
+                        ? DialogBox.getErrorDialog(response) : DialogBox.getChrisDialog(response));
         userInput.clear();
 
         if (chris.isExitRequested()) {

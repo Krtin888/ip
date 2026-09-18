@@ -6,13 +6,13 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="600.0" prefWidth="400.0"
+<AnchorPane prefHeight="620.0" prefWidth="520.0"
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="chris.gui.MainWindow">
     <children>
         <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER"
-                    AnchorPane.bottomAnchor="52.0" AnchorPane.leftAnchor="0.0"
+                    AnchorPane.bottomAnchor="64.0" AnchorPane.leftAnchor="0.0"
                     AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <content>
                 <VBox fx:id="dialogContainer" spacing="8.0" />
@@ -20,9 +20,9 @@
         </ScrollPane>
         <TextField fx:id="userInput" onAction="#handleUserInput"
                    promptText="Enter a command..."
-                   AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0"
-                   AnchorPane.rightAnchor="84.0" />
+                   AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="16.0"
+                   AnchorPane.rightAnchor="96.0" />
         <Button fx:id="sendButton" onAction="#handleUserInput" text="Send"
-                AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="8.0" />
+                AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="16.0" />
     </children>
 </AnchorPane>

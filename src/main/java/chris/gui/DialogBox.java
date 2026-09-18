@@ -48,6 +48,13 @@ public class DialogBox extends HBox {
         return dialogBox;
     }
 
+    /** Returns a visually distinct response for invalid commands or storage errors. */
+    public static DialogBox getErrorDialog(String text) {
+        DialogBox dialogBox = getChrisDialog(text);
+        dialogBox.getStyleClass().add("error-dialog");
+        return dialogBox;
+    }
+
     private void moveAvatarToLeft() {
         ObservableList<Node> children = FXCollections.observableArrayList(getChildren());
         Collections.reverse(children);
